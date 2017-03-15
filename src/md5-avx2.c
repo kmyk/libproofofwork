@@ -36,7 +36,7 @@ static const uint32_t md5_c0 = le32toh(0x98badcfe);
 static const uint32_t md5_d0 = le32toh(0x10325476);
 __attribute__((__aligned__(32))) static const uint32_t indices[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
 
-uint64_t pow_count = 0;
+uint64_t pow_md5_count = 0; // for benchmark
 bool pow_md5_mine(uint8_t *mask, uint8_t *target, uint8_t *buffer, uint64_t *size) {
 #ifdef _OPENMP
     int saved_omp_num_threads = -1;
@@ -85,8 +85,9 @@ bool pow_md5_mine(uint8_t *mask, uint8_t *target, uint8_t *buffer, uint64_t *siz
     md5_round1(&a1,b1,c1,d1, x8 ,  7, le32toh(0x698098d8), md5_f1);
     md5_round1(&d1,a1,b1,c1, x9 , 12, le32toh(0x8b44f7af), md5_f1);
     md5_round1(&c1,d1,a1,b1, x10, 17, le32toh(0xffff5bb1), md5_f1);
+    uint64_t cnt = 0;
 #define repeat_ascii(c) for (uint8_t c = '!'; c <= '~'; ++ c)
-#pragma omp parallel for shared(found) reduction(+:pow_count)
+#pragma omp parallel for shared(found) reduction(+:cnt)
     repeat_ascii (i11) { if (found) continue;
     repeat_ascii (i10) { if (found) break;
     repeat_ascii (i9 ) { if (found) break;
@@ -97,7 +98,7 @@ bool pow_md5_mine(uint8_t *mask, uint8_t *target, uint8_t *buffer, uint64_t *siz
     repeat_ascii (i5 ) { if (found) break;
     repeat_ascii (i4 ) {
         const __m256i y12 = _mm256_set1_epi32(le32toh(i7 | ((uint32_t)i6 << 8) | ((uint32_t)i5 << 16) | ((uint32_t)i4 << 24)));
-        pow_count += ('z'-'#'+1)*(uint64_t)('~'-'!'+1)*('~'-'!'+1);
+        cnt += ('z'-'#'+1)*(uint64_t)('~'-'!'+1)*('~'-'!'+1);
     repeat_ascii (i1 ) {
     repeat_ascii (i2 ) {
 #undef repeat_ascii
@@ -207,5 +208,6 @@ bool pow_md5_mine(uint8_t *mask, uint8_t *target, uint8_t *buffer, uint64_t *siz
         omp_set_num_threads(saved_omp_num_threads);
     }
 #endif
+    pow_md5_count = cnt;
     return found;
 }

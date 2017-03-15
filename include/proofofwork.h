@@ -1,3 +1,5 @@
+#include <stdint.h>
+#include <stdbool.h>
 enum { pow_md5_chunk_length = 64 };
 enum { pow_md5_digest_length = 16 };
 /**

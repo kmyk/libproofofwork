@@ -4,10 +4,10 @@ CC ?= clang
 CCFLAGS += -std=c99 -Wall -O3 -mtune=native -march=native
 PYTHON ?= python3
 
-all: openssl pyhashlib
+all: proofofwork openssl pyhashlib
 
 proofofwork:
-	${CC} ${CCFLAGS} -fopenmp proofofwork.c -I../include ../src/md5-avx2.c
+	${CC} ${CCFLAGS} -fopenmp -I../include ../src/md5-avx2.c proofofwork.c
 	${PYTHON} report.py ./a.out
 
 openssl:
