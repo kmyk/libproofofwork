@@ -38,11 +38,10 @@ class custom_build_clib(build_clib):
 setup(
     name='proofofwork',
     version='0.0.1',
-    description='', # TODO
-    # long_description=readme,
+    description='Simple hash-mining library',
     author='Kimiyuki Onaka',
     author_email='kimiyuki95@gmail.com',
-    url='https://github.com/kmyk/', # TODO
+    url='https://github.com/kmyk/libproofofwork',
     license='MIT License',
     packages=[ 'proofofwork' ],
     cmdclass=dict(
