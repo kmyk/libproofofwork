@@ -15,12 +15,12 @@ int main(void) {
 #undef repeat_ascii
         MD5(s, sizeof(s)-1, digest);
         ++ cnt;
-        if (digest[0] == 0xc0 && digest[1] == 0xff && digest[2] == 0xee && (digest[3] & 0xf0) == 0xe0) {
+        if (digest[0] == 0xc0 && digest[1] == 0xff && digest[2] == 0xee) {
             goto done;
         }
     }}}}}}
 done:
-    printf("c0ffeee\n");
+    printf("c0ffee\n");
     printf("%s\n", s);
     printf("%d\n", cnt);
     return 0;
