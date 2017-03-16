@@ -24,6 +24,8 @@ b'PREFIX_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA9!!!!!%|crF'
 
 ## Benchmark
 
+### MD5
+
 In my environment,
 
 | Code             | Speed [hashes/sec]  |
@@ -37,8 +39,6 @@ If you have GPUs, you may be faster than above.
 
 ## Todo
 
--   write test
--   fix setup.py
 -   support SHA1, SHA2
 -   support old CPU
 -   support GPU
