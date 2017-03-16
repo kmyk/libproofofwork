@@ -42,7 +42,7 @@ def md5(s, prefix=None):
         mask[i]   = a
         target[i] = b
     buf    = (ctypes.c_uint8 * MD5_CHUNK_LENGTH)()
-    for i, c in enumerate(prefix):
+    for i, c in enumerate(bytearray(prefix)):
         buf[i] = c
     size   = ctypes.c_uint64(len(prefix))
     found = library.pow_md5_mine(ctypes.byref(mask), ctypes.byref(target), ctypes.byref(buf), ctypes.byref(size))
