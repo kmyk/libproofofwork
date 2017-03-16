@@ -1,5 +1,11 @@
 # libProofOfWork
 
+[![Travis](https://img.shields.io/travis/kmyk/libproofofwork.svg)](https://travis-ci.org/kmyk/libproofofwork)
+[![PyPI](https://img.shields.io/pypi/l/proofofwork.svg)]()
+[![PyPI](https://img.shields.io/pypi/pyversions/proofofwork.svg)]()
+[![PyPI](https://img.shields.io/pypi/status/proofofwork.svg)]()
+[![PyPI](https://img.shields.io/pypi/v/proofofwork.svg)]()
+
 Simple hash-mining c library and its python binding.
 
 ## How to Install
@@ -11,7 +17,6 @@ $ pip install proofofwork
 ## How to Use
 
 ``` python
-$ python
 >>> import proofofwork
 >>> s = proofofwork.md5('00000000', prefix=b'PREFIX_')
 >>> s
