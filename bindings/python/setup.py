@@ -37,7 +37,7 @@ class custom_build_clib(build_clib):
 
 setup(
     name='proofofwork',
-    version='0.0.1',
+    version='0.0.2',
     description='Simple hash-mining library',
     author='Kimiyuki Onaka',
     author_email='kimiyuki95@gmail.com',

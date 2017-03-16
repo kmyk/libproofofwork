@@ -1,14 +1,14 @@
-cmake_minimum_required (VERSION 3.1)
+cmake_minimum_required (VERSION 2.4)
 project (proofofwork)
 
-set (CMAKE_C_STANDARD 99)
-set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -mtune=native -march=native")
+set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -O3 -mtune=native -march=native")
 
-# check AVX
+# check SIMD instructions
 include(CheckCSourceCompiles)
 check_c_source_compiles ("#include <immintrin.h>\n int main(void) { __m256i ymm = _mm256_setzero_si256(); return 0; }" HAVE_AVX)
-if (NOT HAVE_AVX)
-    message (FATAL_ERROR "AVX instructions are not supported in your CPU")
+check_c_source_compiles ("#include <immintrin.h>\n int main(void) { __m256i ymm = _mm256_setzero_si256(); ymm = _mm256_abs_epi32(ymm); return 0; }" HAVE_AVX2)
+if (NOT HAVE_AVX2)
+    message (FATAL_ERROR "AVX2 instructions are not supported in your CPU")
 endif ()
 
 # check OpenMP
