@@ -4,8 +4,10 @@
 #include <immintrin.h>
 #include <iso646.h>
 #include <stdbool.h>
-#include <omp.h>
 #include <endian.h>
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 #define unlikely(x) __builtin_expect(!!(x), 0)
 #define repeat(i,n) for (int i = 0; (i) < (int)n; ++(i))
 
