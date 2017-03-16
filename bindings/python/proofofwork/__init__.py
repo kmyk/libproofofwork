@@ -1,8 +1,4 @@
 import sys
-if sys.version_info[0] < 3:
-    import warnings
-    warnings.warn("Python 3.x is assumed", DeprecationWarning)
-
 import os
 import ctypes
 library_path = os.path.abspath(os.path.join(os.path.dirname(sys.modules['proofofwork'].__file__), 'libproofofwork.so'))
@@ -13,7 +9,12 @@ library.pow_md5_mine.restype = ctypes.c_bool
 MD5_DIGEST_LENGTH = 16
 MD5_CHUNK_LENGTH = 64
 prefix_length_limit = 44
-def md5(s, prefix=None): # str, bytes -> bytes
+def md5(s, prefix=None):
+    '''
+    :type s: str or None
+    :type prefix: bytes or None
+    :rtype: bytes
+    '''
     if not isinstance(s, str):
         raise TypeError
     if len(s) > 2*MD5_DIGEST_LENGTH:
@@ -46,6 +47,6 @@ def md5(s, prefix=None): # str, bytes -> bytes
     size   = ctypes.c_uint64(len(prefix))
     found = library.pow_md5_mine(ctypes.byref(mask), ctypes.byref(target), ctypes.byref(buf), ctypes.byref(size))
     if found:
-        return bytes(buf[:size.value])
+        return bytes(bytearray(buf[:size.value]))
     else:
         return None

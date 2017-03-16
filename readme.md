@@ -5,13 +5,13 @@ Simple hash-mining c library and its python binding.
 ## How to Install
 
 ``` sh
-$ pip3 install proofofwork
+$ pip install proofofwork
 ```
 
 ## How to Use
 
 ``` python
-$ python3
+$ python
 >>> import proofofwork
 >>> s = proofofwork.md5('00000000', prefix=b'PREFIX_')
 >>> s
@@ -39,7 +39,6 @@ If you have GPUs, you may be faster than above.
 
 -   write test
 -   fix setup.py
--   support Python2
 -   support SHA1, SHA2
 -   support old CPU
 -   support GPU

@@ -1,7 +1,7 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 from distutils.core import setup
 from distutils.command.sdist import sdist
-from distutils.command.build_clib import build_clib
+from distutils.command.build import build
 import os
 import sys
 import subprocess
@@ -29,15 +29,18 @@ class custom_sdist(sdist):
             shutil.copytree(src, dst)
         return sdist.run(self)
 
-class custom_build_clib(build_clib):
-    def build_libraries(self, libraries):
+class custom_build(build):
+    def run(self):
         # workaround
-        subprocess.check_call([ 'cmake', 'proofofwork', '-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=build/lib/proofofwork' ], stdout=sys.stdout, stderr=sys.stderr)
+        os.chdir('proofofwork')
+        subprocess.check_call([ 'cmake', '.' ], stdout=sys.stdout, stderr=sys.stderr)
         subprocess.check_call([ 'make' ], stdout=sys.stdout, stderr=sys.stderr)
+        os.chdir('..')
+        return build.run(self)
 
 setup(
     name='proofofwork',
-    version='0.0.2',
+    version='0.0.3',
     description='Simple hash-mining library',
     author='Kimiyuki Onaka',
     author_email='kimiyuki95@gmail.com',
@@ -46,21 +49,16 @@ setup(
     packages=[ 'proofofwork' ],
     cmdclass=dict(
         sdist=custom_sdist,
-        build_clib=custom_build_clib,
+        build=custom_build,
     ),
     package_data={
         'proofofwork' : [
             'CMakeLists.txt',
             'src/*.c',
             'include/*.h',
+            'lib*.so'
         ],
     },
-    libraries=[(
-        'proofofwork', dict(
-            package='proofofwork',
-            sources=[], # dummy
-        ),
-    )],
     classifiers=[
         'Environment :: Console',
         'Intended Audience :: Developers',
