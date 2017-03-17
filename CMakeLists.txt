@@ -19,4 +19,5 @@ endif ()
 
 include_directories (include)
 add_library (proofofwork SHARED
-    src/md5-avx2.c)
+    src/md5-avx2.c
+    src/sha1-avx2.c)
