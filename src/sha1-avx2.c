@@ -59,11 +59,11 @@ bool pow_sha1_mine(uint8_t *mask, uint8_t *target, uint8_t *buffer, uint64_t *si
     const uint32_t mask_c = htobe32(((uint32_t *)mask)[2]);
     const uint32_t mask_d = htobe32(((uint32_t *)mask)[3]);
     const uint32_t mask_e = htobe32(((uint32_t *)mask)[4]);
-    const uint32_t target_a = htobe32(((uint32_t *)target)[0] & mask_a);
-    const uint32_t target_b = htobe32(((uint32_t *)target)[1] & mask_b);
-    const uint32_t target_c = htobe32(((uint32_t *)target)[2] & mask_c);
-    const uint32_t target_d = htobe32(((uint32_t *)target)[3] & mask_d);
-    const uint32_t target_e = htobe32(((uint32_t *)target)[4] & mask_d);
+    const uint32_t target_a = htobe32(((uint32_t *)target)[0]) & mask_a;
+    const uint32_t target_b = htobe32(((uint32_t *)target)[1]) & mask_b;
+    const uint32_t target_c = htobe32(((uint32_t *)target)[2]) & mask_c;
+    const uint32_t target_d = htobe32(((uint32_t *)target)[3]) & mask_d;
+    const uint32_t target_e = htobe32(((uint32_t *)target)[4]) & mask_d;
     enum { message_bytes = 55 };
     if (*size > 44) return false;
     for (int i = *size; i < 44; ++ i) buffer[i] = 0x41;
