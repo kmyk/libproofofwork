@@ -10,6 +10,7 @@ int main(int argc, char **argv) {
     uint64_t size = 15;
     memcpy(buffer, "libproofofwork:", size);
     pow_md5_mine(mask, target, buffer, &size);
+    printf("md5\n");
     printf("cafebabe\n");
     printf("%s\n", buffer);
     printf("%lu\n", pow_md5_count);

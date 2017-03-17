@@ -20,17 +20,21 @@ elapsed = end - begin
 print('[*] done: {} sec elapsed'.format(elapsed))
 
 # recieve output
-prefix, s, cnt = stdout.splitlines()
+funcname, prefix, s, cnt = stdout.splitlines()
+funcname = funcname.decode()
 prefix = prefix.decode().lower()
 s = s.decode()
 cnt = int(cnt)
+assert funcname in [ 'md5', 'sha1' ]
 assert all(c in '0123456789abcdef' for c in prefix)
 
 # print result
-digest = hashlib.md5(s.encode()).hexdigest().lower()
-print('[*] md5({}) = {}'.format(repr(s), digest))
+func = { 'md5': hashlib.md5, 'sha1': hashlib.sha1 }[funcname]
+digest = func(s.encode()).hexdigest().lower()
+print('[*] {}({}) = {}'.format(funcname, repr(s), digest))
+print('[*] {} hashes/sec'.format(cnt / elapsed))
 if not digest.startswith(prefix):
     print('[ERROR] wrong result: {} for prefix {}'.format(repr(s), prefix))
     sys.exit(1)
-print('[*] accepted: {} for prefix {}'.format(repr(s), prefix, elapsed))
-print('[*] {} hashes/sec'.format(cnt / elapsed))
+else:
+    print('[*] accepted: {} for prefix {}'.format(repr(s), prefix, elapsed))
