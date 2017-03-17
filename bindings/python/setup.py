@@ -40,7 +40,7 @@ class custom_build(build):
 
 setup(
     name='proofofwork',
-    version='0.0.4',
+    version='0.0.5',
     description='Simple hash-mining library',
     author='Kimiyuki Onaka',
     author_email='kimiyuki95@gmail.com',
@@ -61,7 +61,7 @@ setup(
     },
     classifiers=[
         'Environment :: Console',
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
