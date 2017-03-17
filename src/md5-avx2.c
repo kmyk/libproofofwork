@@ -36,7 +36,6 @@ static const uint32_t md5_a0 = le32toh(0x67452301);
 static const uint32_t md5_b0 = le32toh(0xefcdab89);
 static const uint32_t md5_c0 = le32toh(0x98badcfe);
 static const uint32_t md5_d0 = le32toh(0x10325476);
-__attribute__((__aligned__(32))) static const uint32_t indices[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
 
 uint64_t pow_md5_count = 0; // for benchmark
 bool pow_md5_mine(uint8_t *mask, uint8_t *target, uint8_t *buffer, uint64_t *size) {
@@ -94,30 +93,30 @@ bool pow_md5_mine(uint8_t *mask, uint8_t *target, uint8_t *buffer, uint64_t *siz
     repeat_ascii (i10) { if (found) break;
     repeat_ascii (i9 ) { if (found) break;
     repeat_ascii (i8 ) { if (found) break;
-        const __m256i y11 = _mm256_set1_epi32(le32toh(i11 | ((uint32_t)i10 << 8) | ((uint32_t)i9 << 16) | ((uint32_t)i8 << 24)));
+        const uint32_t x11 = le32toh(i11 | ((uint32_t)i10 << 8) | ((uint32_t)i9 << 16) | ((uint32_t)i8 << 24));
     repeat_ascii (i7 ) { if (found) break;
     repeat_ascii (i6 ) { if (found) break;
     repeat_ascii (i5 ) { if (found) break;
     repeat_ascii (i4 ) {
-        const __m256i y12 = _mm256_set1_epi32(le32toh(i7 | ((uint32_t)i6 << 8) | ((uint32_t)i5 << 16) | ((uint32_t)i4 << 24)));
+        const uint32_t x12 = le32toh(i7 | ((uint32_t)i6 << 8) | ((uint32_t)i5 << 16) | ((uint32_t)i4 << 24));
         cnt += ('z'-'#'+1)*(uint64_t)('~'-'!'+1)*('~'-'!'+1);
     repeat_ascii (i1 ) {
     repeat_ascii (i2 ) {
 #undef repeat_ascii
-        __m256i y13 = _mm256_set1_epi32(le32toh('#' | ((uint32_t)i2 << 8) | ((uint32_t)i1 << 16) | (0x80 << 24))) + _mm256_load_si256((__m256i const *)indices);
+        __m256i y13 = _mm256_set1_epi32(le32toh('#' | ((uint32_t)i2 << 8) | ((uint32_t)i1 << 16) | (0x80 << 24))) + _mm256_set_epi32(7,6,5,4,3,2,1,0);
     for (uint8_t i3 = '#'; i3+7 < 'z'+1; i3 += 8, y13 += _mm256_set1_epi32(8)) {
         __m256i a = _mm256_set1_epi32(a1);
         __m256i b = _mm256_set1_epi32(b1);
         __m256i c = _mm256_set1_epi32(c1);
         __m256i d = _mm256_set1_epi32(d1);
-        md5_roundv(&b,c,d,a, y11, 22, le32toh(0x895cd7be), md5_f);
-        md5_roundv(&a,b,c,d, y12,  7, le32toh(0x6b901122), md5_f);
+        md5_round (&b,c,d,a, x11, 22, le32toh(0x895cd7be), md5_f);
+        md5_round (&a,b,c,d, x12,  7, le32toh(0x6b901122), md5_f);
         md5_roundv(&d,a,b,c, y13, 12, le32toh(0xfd987193), md5_f);
         md5_round (&c,d,a,b, x14, 17, le32toh(0xa679438e), md5_f);
         md5_round (&b,c,d,a, x15, 22, le32toh(0x49b40821), md5_f);
         md5_round (&a,b,c,d, x1 ,  5, le32toh(0xf61e2562), md5_g);
         md5_round (&d,a,b,c, x6 ,  9, le32toh(0xc040b340), md5_g);
-        md5_roundv(&c,d,a,b, y11, 14, le32toh(0x265e5a51), md5_g);
+        md5_round (&c,d,a,b, x11, 14, le32toh(0x265e5a51), md5_g);
         md5_round (&b,c,d,a, x0 , 20, le32toh(0xe9b6c7aa), md5_g);
         md5_round (&a,b,c,d, x5 ,  5, le32toh(0xd62f105d), md5_g);
         md5_round (&d,a,b,c, x10,  9, le32toh(0x02441453), md5_g);
@@ -130,10 +129,10 @@ bool pow_md5_mine(uint8_t *mask, uint8_t *target, uint8_t *buffer, uint64_t *siz
         md5_roundv(&a,b,c,d, y13,  5, le32toh(0xa9e3e905), md5_g);
         md5_round (&d,a,b,c, x2 ,  9, le32toh(0xfcefa3f8), md5_g);
         md5_round (&c,d,a,b, x7 , 14, le32toh(0x676f02d9), md5_g);
-        md5_roundv(&b,c,d,a, y12, 20, le32toh(0x8d2a4c8a), md5_g);
+        md5_round (&b,c,d,a, x12, 20, le32toh(0x8d2a4c8a), md5_g);
         md5_round (&a,b,c,d, x5 ,  4, le32toh(0xfffa3942), md5_h);
         md5_round (&d,a,b,c, x8 , 11, le32toh(0x8771f681), md5_h);
-        md5_roundv(&c,d,a,b, y11, 16, le32toh(0x6d9d6122), md5_h);
+        md5_round (&c,d,a,b, x11, 16, le32toh(0x6d9d6122), md5_h);
         md5_round (&b,c,d,a, x14, 23, le32toh(0xfde5380c), md5_h);
         md5_round (&a,b,c,d, x1 ,  4, le32toh(0xa4beea44), md5_h);
         md5_round (&d,a,b,c, x4 , 11, le32toh(0x4bdecfa9), md5_h);
@@ -144,14 +143,14 @@ bool pow_md5_mine(uint8_t *mask, uint8_t *target, uint8_t *buffer, uint64_t *siz
         md5_round (&c,d,a,b, x3 , 16, le32toh(0xd4ef3085), md5_h);
         md5_round (&b,c,d,a, x6 , 23, le32toh(0x04881d05), md5_h);
         md5_round (&a,b,c,d, x9 ,  4, le32toh(0xd9d4d039), md5_h);
-        md5_roundv(&d,a,b,c, y12, 11, le32toh(0xe6db99e5), md5_h);
+        md5_round (&d,a,b,c, x12, 11, le32toh(0xe6db99e5), md5_h);
         md5_round (&c,d,a,b, x15, 16, le32toh(0x1fa27cf8), md5_h);
         md5_round (&b,c,d,a, x2 , 23, le32toh(0xc4ac5665), md5_h);
         md5_round (&a,b,c,d, x0 ,  6, le32toh(0xf4292244), md5_i);
         md5_round (&d,a,b,c, x7 , 10, le32toh(0x432aff97), md5_i);
         md5_round (&c,d,a,b, x14, 15, le32toh(0xab9423a7), md5_i);
         md5_round (&b,c,d,a, x5 , 21, le32toh(0xfc93a039), md5_i);
-        md5_roundv(&a,b,c,d, y12,  6, le32toh(0x655b59c3), md5_i);
+        md5_round (&a,b,c,d, x12,  6, le32toh(0x655b59c3), md5_i);
         md5_round (&d,a,b,c, x3 , 10, le32toh(0x8f0ccc92), md5_i);
         md5_round (&c,d,a,b, x10, 15, le32toh(0xffeff47d), md5_i);
         md5_round (&b,c,d,a, x1 , 21, le32toh(0x85845dd1), md5_i);
@@ -162,7 +161,7 @@ bool pow_md5_mine(uint8_t *mask, uint8_t *target, uint8_t *buffer, uint64_t *siz
         md5_round (&a,b,c,d, x4 ,  6, le32toh(0xf7537e82), md5_i);
         const __m256i cmp_a = md5_cmp(a, md5_a0, mask_a, target_a); // specialize the first 4 byte
         if (unlikely(not _mm256_testz_si256(cmp_a, cmp_a))) {
-            md5_roundv(&d,a,b,c, y11, 10, le32toh(0xbd3af235), md5_i);
+            md5_round (&d,a,b,c, x11, 10, le32toh(0xbd3af235), md5_i);
             md5_round (&c,d,a,b, x2 , 15, le32toh(0x2ad7d2bb), md5_i);
             md5_round (&b,c,d,a, x9 , 21, le32toh(0xeb86d391), md5_i);
             const __m256i cmp_d = md5_cmp(d, md5_d0, mask_d, target_d);
@@ -172,8 +171,6 @@ bool pow_md5_mine(uint8_t *mask, uint8_t *target, uint8_t *buffer, uint64_t *siz
             const __m256i cmp_bc = _mm256_and_si256(cmp_b, cmp_c);
             if (unlikely(not _mm256_testz_si256(cmp_ad, cmp_bc))) {
                 __attribute__((__aligned__(32))) uint32_t cmp[8]; _mm256_store_si256((__m256i *)cmp, _mm256_and_si256(cmp_ad, cmp_bc));
-                __attribute__((__aligned__(32))) uint32_t z11[8]; _mm256_store_si256((__m256i *)z11, y11);
-                __attribute__((__aligned__(32))) uint32_t z12[8]; _mm256_store_si256((__m256i *)z12, y12);
                 __attribute__((__aligned__(32))) uint32_t z13[8]; _mm256_store_si256((__m256i *)z13, y13);
                 repeat (i, 8) if (not found and cmp[i]) {
 #pragma omp critical
@@ -192,8 +189,8 @@ bool pow_md5_mine(uint8_t *mask, uint8_t *target, uint8_t *buffer, uint64_t *siz
                             x[ 8] = htole32(x8);
                             x[ 9] = htole32(x9);
                             x[10] = htole32(x10);
-                            x[11] = htole32(z11[i]);
-                            x[12] = htole32(z12[i]);
+                            x[11] = htole32(x11);
+                            x[12] = htole32(x12);
                             x[13] = htole32(z13[i]);
                             x[14] = htole32(x14);
                             x[15] = htole32(x15);
