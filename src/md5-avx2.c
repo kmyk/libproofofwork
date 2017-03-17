@@ -180,22 +180,9 @@ bool pow_md5_mine(uint8_t *mask, uint8_t *target, uint8_t *buffer, uint64_t *siz
                         if (not found) {
                             found = true;
                             uint32_t *x = (uint32_t *)buffer;
-                            x[ 0] = x0;
-                            x[ 1] = x1;
-                            x[ 2] = x2;
-                            x[ 3] = x3;
-                            x[ 4] = x4;
-                            x[ 5] = x5;
-                            x[ 6] = x6;
-                            x[ 7] = x7;
-                            x[ 8] = x8;
-                            x[ 9] = x9;
-                            x[10] = x10;
                             x[11] = x11;
                             x[12] = x12;
                             x[13] = z13[i];
-                            x[14] = x14;
-                            x[15] = x15;
                             buffer[message_bytes] = '\0';
                             *size = message_bytes;
                         }
