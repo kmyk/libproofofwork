@@ -1,6 +1,6 @@
 #include <stdint.h>
 #include <stdbool.h>
-enum { pow_md5_chunk_length = 64 };
+enum { pow_md5_block_length = 64 };
 enum { pow_md5_digest_length = 16 };
 /**
  * @param [in]     mask       the length must be pow_md5_digest_length.
