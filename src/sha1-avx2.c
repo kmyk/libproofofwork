@@ -5,7 +5,7 @@
 #include <iso646.h>
 #include <stdbool.h>
 
-#if defined(LINUX)
+#if defined(__linux) || defined(linux)
 #include <endian.h>
 #elif defined(__APPLE__) || defined(__DARWIN__)
 #include <libkern/OSByteOrder.h>
