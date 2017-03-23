@@ -1,7 +1,6 @@
 #define _BSD_SOURCE
-#include <stdio.h>
+#include "proofofwork.h"
 #include <stdint.h>
-#include <immintrin.h>
 #include <iso646.h>
 #include <stdbool.h>
 
@@ -28,6 +27,9 @@
 #ifdef _OPENMP
 #include <omp.h>
 #endif
+
+#include <immintrin.h>
+
 #define unlikely(x) __builtin_expect(!!(x), 0)
 #define repeat(i,n) for (int i = 0; (i) < (int)n; ++(i))
 #define static_assert(p, msg) enum { static_assert ## __LINE__ = 1/!!(p) }
@@ -74,30 +76,30 @@ bool pow_sha1_mine(uint8_t *mask, uint8_t *target, uint8_t *buffer, uint64_t *si
         omp_set_num_threads(omp_get_max_threads());
     }
 #endif
-    const uint32_t mask_a = htobe32(((uint32_t *)mask)[0]);
-    const uint32_t mask_b = htobe32(((uint32_t *)mask)[1]);
-    const uint32_t mask_c = htobe32(((uint32_t *)mask)[2]);
-    const uint32_t mask_d = htobe32(((uint32_t *)mask)[3]);
-    const uint32_t mask_e = htobe32(((uint32_t *)mask)[4]);
-    const uint32_t target_a = htobe32(((uint32_t *)target)[0]) & mask_a;
-    const uint32_t target_b = htobe32(((uint32_t *)target)[1]) & mask_b;
-    const uint32_t target_c = htobe32(((uint32_t *)target)[2]) & mask_c;
-    const uint32_t target_d = htobe32(((uint32_t *)target)[3]) & mask_d;
-    const uint32_t target_e = htobe32(((uint32_t *)target)[4]) & mask_d;
+    const uint32_t mask_a = be32toh(((uint32_t *)mask)[0]);
+    const uint32_t mask_b = be32toh(((uint32_t *)mask)[1]);
+    const uint32_t mask_c = be32toh(((uint32_t *)mask)[2]);
+    const uint32_t mask_d = be32toh(((uint32_t *)mask)[3]);
+    const uint32_t mask_e = be32toh(((uint32_t *)mask)[4]);
+    const uint32_t target_a = be32toh(((uint32_t *)target)[0]) & mask_a;
+    const uint32_t target_b = be32toh(((uint32_t *)target)[1]) & mask_b;
+    const uint32_t target_c = be32toh(((uint32_t *)target)[2]) & mask_c;
+    const uint32_t target_d = be32toh(((uint32_t *)target)[3]) & mask_d;
+    const uint32_t target_e = be32toh(((uint32_t *)target)[4]) & mask_d;
     enum { message_bytes = 55 };
     if (*size > 44) return false;
     for (int i = *size; i < 44; ++ i) buffer[i] = 0x41;
-    const uint32_t x0  = htobe32(((uint32_t *)buffer)[0]);
-    const uint32_t x1  = htobe32(((uint32_t *)buffer)[1]);
-    const uint32_t x2  = htobe32(((uint32_t *)buffer)[2]);
-    const uint32_t x3  = htobe32(((uint32_t *)buffer)[3]);
-    const uint32_t x4  = htobe32(((uint32_t *)buffer)[4]);
-    const uint32_t x5  = htobe32(((uint32_t *)buffer)[5]);
-    const uint32_t x6  = htobe32(((uint32_t *)buffer)[6]);
-    const uint32_t x7  = htobe32(((uint32_t *)buffer)[7]);
-    const uint32_t x8  = htobe32(((uint32_t *)buffer)[8]);
-    const uint32_t x9  = htobe32(((uint32_t *)buffer)[9]);
-    const uint32_t x10 = htobe32(((uint32_t *)buffer)[10]);
+    const uint32_t x0  = be32toh(((uint32_t *)buffer)[0]);
+    const uint32_t x1  = be32toh(((uint32_t *)buffer)[1]);
+    const uint32_t x2  = be32toh(((uint32_t *)buffer)[2]);
+    const uint32_t x3  = be32toh(((uint32_t *)buffer)[3]);
+    const uint32_t x4  = be32toh(((uint32_t *)buffer)[4]);
+    const uint32_t x5  = be32toh(((uint32_t *)buffer)[5]);
+    const uint32_t x6  = be32toh(((uint32_t *)buffer)[6]);
+    const uint32_t x7  = be32toh(((uint32_t *)buffer)[7]);
+    const uint32_t x8  = be32toh(((uint32_t *)buffer)[8]);
+    const uint32_t x9  = be32toh(((uint32_t *)buffer)[9]);
+    const uint32_t x10 = be32toh(((uint32_t *)buffer)[10]);
     static const uint32_t x14 = 0x00000000;
     static const uint32_t x15 = message_bytes * 8;
     bool found = false;
@@ -114,7 +116,7 @@ bool pow_sha1_mine(uint8_t *mask, uint8_t *target, uint8_t *buffer, uint64_t *si
     repeat_ascii (i2 ) { if (found) break;
     repeat_ascii (i1 ) { if (found) break;
         const uint32_t x13 = 0x80 | ((uint32_t)i1 << 8) | ((uint32_t)i2 << 16) | ((uint32_t)i3 << 24);
-    repeat_ascii (i7 ) {
+    repeat_ascii (i7 ) { if (found) break;
         cnt += ('z'-'#'+1)*(uint64_t)('~'-'!'+1)*('~'-'!'+1);
     repeat_ascii (i6 ) {
     repeat_ascii (i5 ) {
@@ -161,20 +163,20 @@ bool pow_sha1_mine(uint8_t *mask, uint8_t *target, uint8_t *buffer, uint64_t *si
         const __m256i  y23 = leftrotate ( y20 ^ _mm256_set1_epi32(x15 ^ x9 ^ x7), 1 );
         const uint32_t x24 = leftrotate1( x21 ^ x16 ^ x10 ^ x8, 1 );
         const uint32_t x25 = leftrotate1( x22 ^ x17 ^ x11 ^ x9, 1 );
-        const __m256i  y26 = leftrotate ( _mm256_xor_si256(_mm256_xor_si256(y23, y12), _mm256_set1_epi32(x18 ^ x10)), 1 );
+        const __m256i  y26 = leftrotate ( y23 ^ y12 ^ _mm256_set1_epi32(x18 ^ x10), 1 );
         const uint32_t x27 = leftrotate1( x24 ^ x19 ^ x13 ^ x11, 1 );
-        const __m256i  y28 = leftrotate ( _mm256_xor_si256(_mm256_xor_si256(y20, y12), _mm256_set1_epi32(x25 ^ x14)), 1 );
-        const __m256i  y29 = leftrotate ( _mm256_xor_si256(y26, _mm256_set1_epi32(x21 ^ x15 ^ x13)), 1 );
+        const __m256i  y28 = leftrotate ( y20 ^ y12 ^ _mm256_set1_epi32(x25 ^ x14), 1 );
+        const __m256i  y29 = leftrotate ( y26 ^ _mm256_set1_epi32(x21 ^ x15 ^ x13), 1 );
         const uint32_t x30 = leftrotate1( x27 ^ x22 ^ x16 ^ x14, 1 );
-        const __m256i  y31 = leftrotate ( _mm256_xor_si256(_mm256_xor_si256(y28, y23), _mm256_set1_epi32(x17 ^ x15)), 1 );
-        const __m256i  y32 = leftrotate ( _mm256_xor_si256(y29, _mm256_set1_epi32(x24 ^ x18 ^ x16)), 1 );
+        const __m256i  y31 = leftrotate ( y28 ^ y23 ^ _mm256_set1_epi32(x17 ^ x15), 1 );
+        const __m256i  y32 = leftrotate ( y29 ^ _mm256_set1_epi32(x24 ^ x18 ^ x16), 1 );
         const uint32_t x33 = leftrotate1( x30 ^ x25 ^ x19 ^ x17, 1 );
-        const __m256i  y34 = leftrotate ( _mm256_xor_si256(_mm256_xor_si256(y31, y26), _mm256_xor_si256(y20, _mm256_set1_epi32(x18))), 1 );
-        const __m256i  y35 = leftrotate ( _mm256_xor_si256(y32, _mm256_set1_epi32(x27 ^ x21 ^ x19)), 1 );
-        const __m256i  y36 = leftrotate ( _mm256_xor_si256(_mm256_xor_si256(y28, y20), _mm256_set1_epi32(x33 ^ x22)), 1 );
-        const __m256i  y37 = leftrotate ( _mm256_xor_si256(_mm256_xor_si256(y34, y29), _mm256_xor_si256(y23, _mm256_set1_epi32(x21))), 1 );
-        const __m256i  y38 = leftrotate ( _mm256_xor_si256(y35, _mm256_set1_epi32(x30 ^ x24 ^ x22)), 1 );
-        const __m256i  y39 = leftrotate ( _mm256_xor_si256(_mm256_xor_si256(y36, y31), _mm256_xor_si256(y23, _mm256_set1_epi32(x25))), 1 );
+        const __m256i  y34 = leftrotate ( y31 ^ y26 ^ y20 ^ _mm256_set1_epi32(x18), 1 );
+        const __m256i  y35 = leftrotate ( y32 ^ _mm256_set1_epi32(x27 ^ x21 ^ x19), 1 );
+        const __m256i  y36 = leftrotate ( y28 ^ y20 ^ _mm256_set1_epi32(x33 ^ x22), 1 );
+        const __m256i  y37 = leftrotate ( y34 ^ y29 ^ y23 ^ _mm256_set1_epi32(x21), 1 );
+        const __m256i  y38 = leftrotate ( y35 ^ _mm256_set1_epi32(x30 ^ x24 ^ x22), 1 );
+        const __m256i  y39 = leftrotate ( y36 ^ y31 ^ y23 ^ _mm256_set1_epi32(x25), 1 );
         sha1_roundv(a,&b,c,d,&e, y20, sha1_k20, sha1_f20);
         sha1_round (e,&a,b,c,&d, x21, sha1_k20, sha1_f20);
         sha1_round (d,&e,a,b,&c, x22, sha1_k20, sha1_f20);
@@ -197,26 +199,26 @@ bool pow_sha1_mine(uint8_t *mask, uint8_t *target, uint8_t *buffer, uint64_t *si
         sha1_roundv(b,&c,d,e,&a, y39, sha1_k20, sha1_f20);
 
         // Round 3
-        const __m256i y40 = leftrotate( _mm256_xor_si256(_mm256_xor_si256(y37, y32), _mm256_xor_si256(y26, _mm256_set1_epi32(x24))), 1 );
-        const __m256i y41 = leftrotate( _mm256_xor_si256(y38, _mm256_set1_epi32(x33 ^ x27 ^ x25)), 1 );
-        const __m256i y42 = leftrotate( _mm256_xor_si256(_mm256_xor_si256(y39, y34), _mm256_xor_si256(y28, y26)), 1 );
-        const __m256i y43 = leftrotate( _mm256_xor_si256(_mm256_xor_si256(y40, y35), _mm256_xor_si256(y29, _mm256_set1_epi32(x27))), 1 );
-        const __m256i y44 = leftrotate( _mm256_xor_si256(_mm256_xor_si256(y41, y36), _mm256_xor_si256(y28, _mm256_set1_epi32(x30))), 1 );
-        const __m256i y45 = leftrotate( _mm256_xor_si256(_mm256_xor_si256(y42, y37), _mm256_xor_si256(y31, y29)), 1 );
-        const __m256i y46 = leftrotate( _mm256_xor_si256(_mm256_xor_si256(y43, y38), _mm256_xor_si256(y32, _mm256_set1_epi32(x30))), 1 );
-        const __m256i y47 = leftrotate( _mm256_xor_si256(_mm256_xor_si256(y44, y39), _mm256_xor_si256(y31, _mm256_set1_epi32(x33))), 1 );
-        const __m256i y48 = leftrotate( _mm256_xor_si256(_mm256_xor_si256(y45, y40), _mm256_xor_si256(y34, y32)), 1 );
-        const __m256i y49 = leftrotate( _mm256_xor_si256(_mm256_xor_si256(y46, y41), _mm256_xor_si256(y35, _mm256_set1_epi32(x33))), 1 );
-        const __m256i y50 = leftrotate( _mm256_xor_si256(_mm256_xor_si256(y47, y42), _mm256_xor_si256(y36, y34)), 1 );
-        const __m256i y51 = leftrotate( _mm256_xor_si256(_mm256_xor_si256(y48, y43), _mm256_xor_si256(y37, y35)), 1 );
-        const __m256i y52 = leftrotate( _mm256_xor_si256(_mm256_xor_si256(y49, y44), _mm256_xor_si256(y38, y36)), 1 );
-        const __m256i y53 = leftrotate( _mm256_xor_si256(_mm256_xor_si256(y50, y45), _mm256_xor_si256(y39, y37)), 1 );
-        const __m256i y54 = leftrotate( _mm256_xor_si256(_mm256_xor_si256(y51, y46), _mm256_xor_si256(y40, y38)), 1 );
-        const __m256i y55 = leftrotate( _mm256_xor_si256(_mm256_xor_si256(y52, y47), _mm256_xor_si256(y41, y39)), 1 );
-        const __m256i y56 = leftrotate( _mm256_xor_si256(_mm256_xor_si256(y53, y48), _mm256_xor_si256(y42, y40)), 1 );
-        const __m256i y57 = leftrotate( _mm256_xor_si256(_mm256_xor_si256(y54, y49), _mm256_xor_si256(y43, y41)), 1 );
-        const __m256i y58 = leftrotate( _mm256_xor_si256(_mm256_xor_si256(y55, y50), _mm256_xor_si256(y44, y42)), 1 );
-        const __m256i y59 = leftrotate( _mm256_xor_si256(_mm256_xor_si256(y56, y51), _mm256_xor_si256(y45, y43)), 1 );
+        const __m256i y40 = leftrotate( y37 ^ y32 ^ y26 ^ _mm256_set1_epi32(x24), 1 );
+        const __m256i y41 = leftrotate( y38 ^ _mm256_set1_epi32(x33 ^ x27 ^ x25), 1 );
+        const __m256i y42 = leftrotate( y39 ^ y34 ^ y28 ^ y26, 1 );
+        const __m256i y43 = leftrotate( y40 ^ y35 ^ y29 ^ _mm256_set1_epi32(x27), 1 );
+        const __m256i y44 = leftrotate( y41 ^ y36 ^ y28 ^ _mm256_set1_epi32(x30), 1 );
+        const __m256i y45 = leftrotate( y42 ^ y37 ^ y31 ^ y29, 1 );
+        const __m256i y46 = leftrotate( y43 ^ y38 ^ y32 ^ _mm256_set1_epi32(x30), 1 );
+        const __m256i y47 = leftrotate( y44 ^ y39 ^ y31 ^ _mm256_set1_epi32(x33), 1 );
+        const __m256i y48 = leftrotate( y45 ^ y40 ^ y34 ^ y32, 1 );
+        const __m256i y49 = leftrotate( y46 ^ y41 ^ y35 ^ _mm256_set1_epi32(x33), 1 );
+        const __m256i y50 = leftrotate( y47 ^ y42 ^ y36 ^ y34, 1 );
+        const __m256i y51 = leftrotate( y48 ^ y43 ^ y37 ^ y35, 1 );
+        const __m256i y52 = leftrotate( y49 ^ y44 ^ y38 ^ y36, 1 );
+        const __m256i y53 = leftrotate( y50 ^ y45 ^ y39 ^ y37, 1 );
+        const __m256i y54 = leftrotate( y51 ^ y46 ^ y40 ^ y38, 1 );
+        const __m256i y55 = leftrotate( y52 ^ y47 ^ y41 ^ y39, 1 );
+        const __m256i y56 = leftrotate( y53 ^ y48 ^ y42 ^ y40, 1 );
+        const __m256i y57 = leftrotate( y54 ^ y49 ^ y43 ^ y41, 1 );
+        const __m256i y58 = leftrotate( y55 ^ y50 ^ y44 ^ y42, 1 );
+        const __m256i y59 = leftrotate( y56 ^ y51 ^ y45 ^ y43, 1 );
         sha1_roundv(a,&b,c,d,&e, y40, sha1_k40, sha1_f40);
         sha1_roundv(e,&a,b,c,&d, y41, sha1_k40, sha1_f40);
         sha1_roundv(d,&e,a,b,&c, y42, sha1_k40, sha1_f40);
@@ -239,26 +241,26 @@ bool pow_sha1_mine(uint8_t *mask, uint8_t *target, uint8_t *buffer, uint64_t *si
         sha1_roundv(b,&c,d,e,&a, y59, sha1_k40, sha1_f40);
 
         // Round 4
-        const __m256i y60 = leftrotate( _mm256_xor_si256(_mm256_xor_si256(y57, y52), _mm256_xor_si256(y46, y44)), 1 );
-        const __m256i y61 = leftrotate( _mm256_xor_si256(_mm256_xor_si256(y58, y53), _mm256_xor_si256(y47, y45)), 1 );
-        const __m256i y62 = leftrotate( _mm256_xor_si256(_mm256_xor_si256(y59, y54), _mm256_xor_si256(y48, y46)), 1 );
-        const __m256i y63 = leftrotate( _mm256_xor_si256(_mm256_xor_si256(y60, y55), _mm256_xor_si256(y49, y47)), 1 );
-        const __m256i y64 = leftrotate( _mm256_xor_si256(_mm256_xor_si256(y61, y56), _mm256_xor_si256(y50, y48)), 1 );
-        const __m256i y65 = leftrotate( _mm256_xor_si256(_mm256_xor_si256(y62, y57), _mm256_xor_si256(y51, y49)), 1 );
-        const __m256i y66 = leftrotate( _mm256_xor_si256(_mm256_xor_si256(y63, y58), _mm256_xor_si256(y52, y50)), 1 );
-        const __m256i y67 = leftrotate( _mm256_xor_si256(_mm256_xor_si256(y64, y59), _mm256_xor_si256(y53, y51)), 1 );
-        const __m256i y68 = leftrotate( _mm256_xor_si256(_mm256_xor_si256(y65, y60), _mm256_xor_si256(y54, y52)), 1 );
-        const __m256i y69 = leftrotate( _mm256_xor_si256(_mm256_xor_si256(y66, y61), _mm256_xor_si256(y55, y53)), 1 );
-        const __m256i y70 = leftrotate( _mm256_xor_si256(_mm256_xor_si256(y67, y62), _mm256_xor_si256(y56, y54)), 1 );
-        const __m256i y71 = leftrotate( _mm256_xor_si256(_mm256_xor_si256(y68, y63), _mm256_xor_si256(y57, y55)), 1 );
-        const __m256i y72 = leftrotate( _mm256_xor_si256(_mm256_xor_si256(y69, y64), _mm256_xor_si256(y58, y56)), 1 );
-        const __m256i y73 = leftrotate( _mm256_xor_si256(_mm256_xor_si256(y70, y65), _mm256_xor_si256(y59, y57)), 1 );
-        const __m256i y74 = leftrotate( _mm256_xor_si256(_mm256_xor_si256(y71, y66), _mm256_xor_si256(y60, y58)), 1 );
-        const __m256i y75 = leftrotate( _mm256_xor_si256(_mm256_xor_si256(y72, y67), _mm256_xor_si256(y61, y59)), 1 );
-        const __m256i y76 = leftrotate( _mm256_xor_si256(_mm256_xor_si256(y73, y68), _mm256_xor_si256(y62, y60)), 1 );
-        const __m256i y77 = leftrotate( _mm256_xor_si256(_mm256_xor_si256(y74, y69), _mm256_xor_si256(y63, y61)), 1 );
-        const __m256i y78 = leftrotate( _mm256_xor_si256(_mm256_xor_si256(y75, y70), _mm256_xor_si256(y64, y62)), 1 );
-        const __m256i y79 = leftrotate( _mm256_xor_si256(_mm256_xor_si256(y76, y71), _mm256_xor_si256(y65, y63)), 1 );
+        const __m256i y60 = leftrotate( y57 ^ y52 ^ y46 ^ y44, 1 );
+        const __m256i y61 = leftrotate( y58 ^ y53 ^ y47 ^ y45, 1 );
+        const __m256i y62 = leftrotate( y59 ^ y54 ^ y48 ^ y46, 1 );
+        const __m256i y63 = leftrotate( y60 ^ y55 ^ y49 ^ y47, 1 );
+        const __m256i y64 = leftrotate( y61 ^ y56 ^ y50 ^ y48, 1 );
+        const __m256i y65 = leftrotate( y62 ^ y57 ^ y51 ^ y49, 1 );
+        const __m256i y66 = leftrotate( y63 ^ y58 ^ y52 ^ y50, 1 );
+        const __m256i y67 = leftrotate( y64 ^ y59 ^ y53 ^ y51, 1 );
+        const __m256i y68 = leftrotate( y65 ^ y60 ^ y54 ^ y52, 1 );
+        const __m256i y69 = leftrotate( y66 ^ y61 ^ y55 ^ y53, 1 );
+        const __m256i y70 = leftrotate( y67 ^ y62 ^ y56 ^ y54, 1 );
+        const __m256i y71 = leftrotate( y68 ^ y63 ^ y57 ^ y55, 1 );
+        const __m256i y72 = leftrotate( y69 ^ y64 ^ y58 ^ y56, 1 );
+        const __m256i y73 = leftrotate( y70 ^ y65 ^ y59 ^ y57, 1 );
+        const __m256i y74 = leftrotate( y71 ^ y66 ^ y60 ^ y58, 1 );
+        const __m256i y75 = leftrotate( y72 ^ y67 ^ y61 ^ y59, 1 );
+        const __m256i y76 = leftrotate( y73 ^ y68 ^ y62 ^ y60, 1 );
+        const __m256i y77 = leftrotate( y74 ^ y69 ^ y63 ^ y61, 1 );
+        const __m256i y78 = leftrotate( y75 ^ y70 ^ y64 ^ y62, 1 );
+        const __m256i y79 = leftrotate( y76 ^ y71 ^ y65 ^ y63, 1 );
         sha1_roundv(a,&b,c,d,&e, y60, sha1_k60, sha1_f60);
         sha1_roundv(e,&a,b,c,&d, y61, sha1_k60, sha1_f60);
         sha1_roundv(d,&e,a,b,&c, y62, sha1_k60, sha1_f60);
@@ -281,30 +283,30 @@ bool pow_sha1_mine(uint8_t *mask, uint8_t *target, uint8_t *buffer, uint64_t *si
         sha1_roundv(b,&c,d,e,&a, y79, sha1_k60, sha1_f60);
 
         a = _mm256_add_epi32(a, _mm256_set1_epi32(sha1_a0));
-        const __m256i cmp_a = _mm256_cmpeq_epi32(_mm256_and_si256(a, _mm256_set1_epi32(mask_a)), _mm256_set1_epi32(target_a));
+        const __m256i cmp_a = _mm256_cmpeq_epi32(a & _mm256_set1_epi32(mask_a), _mm256_set1_epi32(target_a));
         if (unlikely(not _mm256_testz_si256(cmp_a, cmp_a))) {
             b = _mm256_add_epi32(b, _mm256_set1_epi32(sha1_b0));
             c = _mm256_add_epi32(c, _mm256_set1_epi32(sha1_c0));
             d = _mm256_add_epi32(d, _mm256_set1_epi32(sha1_d0));
             e = _mm256_add_epi32(e, _mm256_set1_epi32(sha1_e0));
-            const __m256i cmp_b = _mm256_cmpeq_epi32(_mm256_and_si256(b, _mm256_set1_epi32(mask_b)), _mm256_set1_epi32(target_b));
-            const __m256i cmp_c = _mm256_cmpeq_epi32(_mm256_and_si256(c, _mm256_set1_epi32(mask_c)), _mm256_set1_epi32(target_c));
-            const __m256i cmp_d = _mm256_cmpeq_epi32(_mm256_and_si256(d, _mm256_set1_epi32(mask_d)), _mm256_set1_epi32(target_d));
-            const __m256i cmp_e = _mm256_cmpeq_epi32(_mm256_and_si256(e, _mm256_set1_epi32(mask_e)), _mm256_set1_epi32(target_e));
-            const __m256i cmp_ad = _mm256_and_si256(cmp_a, cmp_d);
-            const __m256i cmp_bc = _mm256_and_si256(cmp_b, cmp_c);
-            const __m256i cmp_ade = _mm256_and_si256(cmp_ad, cmp_e);
+            const __m256i cmp_b = _mm256_cmpeq_epi32(b & _mm256_set1_epi32(mask_b), _mm256_set1_epi32(target_b));
+            const __m256i cmp_c = _mm256_cmpeq_epi32(c & _mm256_set1_epi32(mask_c), _mm256_set1_epi32(target_c));
+            const __m256i cmp_d = _mm256_cmpeq_epi32(d & _mm256_set1_epi32(mask_d), _mm256_set1_epi32(target_d));
+            const __m256i cmp_e = _mm256_cmpeq_epi32(e & _mm256_set1_epi32(mask_e), _mm256_set1_epi32(target_e));
+            const __m256i cmp_ad = cmp_a & cmp_d;
+            const __m256i cmp_bc = cmp_b & cmp_c;
+            const __m256i cmp_ade = cmp_ad & cmp_e;
             if (unlikely(not _mm256_testz_si256(cmp_ade, cmp_bc))) {
-                __attribute__((__aligned__(32))) uint32_t cmp[8]; _mm256_store_si256((__m256i *)cmp, _mm256_and_si256(cmp_ade, cmp_bc));
+                __attribute__((__aligned__(32))) uint32_t cmp[8]; _mm256_store_si256((__m256i *)cmp, cmp_ade & cmp_bc);
                 __attribute__((__aligned__(32))) uint32_t z12[8]; _mm256_store_si256((__m256i *)z12, y12);
                 repeat (i, 8) if (not found and cmp[i]) {
 #pragma omp critical
                     {
                         if (not found) {
                             found = true;
-                            ((uint32_t *)buffer)[11] = be32toh(x11);
-                            ((uint32_t *)buffer)[12] = be32toh(z12[i]);
-                            ((uint32_t *)buffer)[13] = be32toh(x13);
+                            ((uint32_t *)buffer)[11] = htobe32(x11);
+                            ((uint32_t *)buffer)[12] = htobe32(z12[i]);
+                            ((uint32_t *)buffer)[13] = htobe32(x13);
                             buffer[message_bytes] = '\0';
                             *size = message_bytes;
                         }
