@@ -1,7 +1,6 @@
 #define _BSD_SOURCE
-#include <stdio.h>
+#include "proofofwork.h"
 #include <stdint.h>
-#include <immintrin.h>
 #include <iso646.h>
 #include <stdbool.h>
 
@@ -28,6 +27,9 @@
 #ifdef _OPENMP
 #include <omp.h>
 #endif
+
+#include <immintrin.h>
+
 #define unlikely(x) __builtin_expect(!!(x), 0)
 #define repeat(i,n) for (int i = 0; (i) < (int)n; ++(i))
 #define static_assert(p, msg) enum { static_assert ## __LINE__ = 1/!!(p) }
@@ -46,7 +48,7 @@ static inline void md5_round(__m256i *a, __m256i b, __m256i c, __m256i d, uint32
     *a = _mm256_add_epi32(b, leftrotate(acc, s));
 }
 static inline __m256i md5_cmp(__m256i x, uint32_t x0, uint32_t mask, uint32_t target) {
-    return _mm256_cmpeq_epi32(_mm256_and_si256(_mm256_add_epi32(x, _mm256_set1_epi32(x0)), _mm256_set1_epi32(mask)), _mm256_set1_epi32(target));
+    return _mm256_cmpeq_epi32(_mm256_add_epi32(x, _mm256_set1_epi32(x0)) & _mm256_set1_epi32(mask), _mm256_set1_epi32(target));
 }
 static inline uint32_t leftrotate1(uint32_t x, unsigned c) { return (x << c) | (x >> (32 - c)); }
 static inline uint32_t md5_f1(uint32_t x, uint32_t y, uint32_t z) { return (x & y) | (~ x & z); }
@@ -119,7 +121,7 @@ bool pow_md5_mine(uint8_t *mask, uint8_t *target, uint8_t *buffer, uint64_t *siz
     repeat_ascii (i7 ) { if (found) break;
     repeat_ascii (i6 ) { if (found) break;
     repeat_ascii (i5 ) { if (found) break;
-    repeat_ascii (i4 ) {
+    repeat_ascii (i4 ) { if (found) break;
         const uint32_t x12 = i7 | ((uint32_t)i6 << 8) | ((uint32_t)i5 << 16) | ((uint32_t)i4 << 24);
         cnt += ('z'-'#'+1)*(uint64_t)('~'-'!'+1)*('~'-'!'+1);
     repeat_ascii (i1 ) {
@@ -189,10 +191,10 @@ bool pow_md5_mine(uint8_t *mask, uint8_t *target, uint8_t *buffer, uint64_t *siz
             const __m256i cmp_d = md5_cmp(d, md5_d0, mask_d, target_d);
             const __m256i cmp_c = md5_cmp(c, md5_c0, mask_c, target_c);
             const __m256i cmp_b = md5_cmp(b, md5_b0, mask_b, target_b);
-            const __m256i cmp_ad = _mm256_and_si256(cmp_a, cmp_d);
-            const __m256i cmp_bc = _mm256_and_si256(cmp_b, cmp_c);
+            const __m256i cmp_ad = cmp_a & cmp_d;
+            const __m256i cmp_bc = cmp_b & cmp_c;
             if (unlikely(not _mm256_testz_si256(cmp_ad, cmp_bc))) {
-                __attribute__((__aligned__(32))) uint32_t cmp[8]; _mm256_store_si256((__m256i *)cmp, _mm256_and_si256(cmp_ad, cmp_bc));
+                __attribute__((__aligned__(32))) uint32_t cmp[8]; _mm256_store_si256((__m256i *)cmp, cmp_ad & cmp_bc);
                 __attribute__((__aligned__(32))) uint32_t z13[8]; _mm256_store_si256((__m256i *)z13, y13);
                 repeat (i, 8) if (not found and cmp[i]) {
 #pragma omp critical
