@@ -18,6 +18,10 @@ if (OPENMP_FOUND)
 endif ()
 
 include_directories (include)
-add_library (proofofwork SHARED
+set (sources
     src/md5-avx2.c
     src/sha1-avx2.c)
+add_library (proofofwork-shared SHARED ${sources})
+add_library (proofofwork-static STATIC ${sources})
+set_target_properties (proofofwork-shared PROPERTIES OUTPUT_NAME proofofwork)
+set_target_properties (proofofwork-static PROPERTIES OUTPUT_NAME proofofwork)
