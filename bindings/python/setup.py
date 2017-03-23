@@ -56,7 +56,7 @@ setup(
             'CMakeLists.txt',
             'src/*.c',
             'include/*.h',
-            'lib*.so'
+            'libproofofwork.*'
         ],
     },
     classifiers=[

@@ -1,7 +1,13 @@
 import sys
 import os
 import ctypes
-library_path = os.path.abspath(os.path.join(os.path.dirname(sys.modules['proofofwork'].__file__), 'libproofofwork.so'))
+
+soext = {
+    'linux': 'so',
+    'linux2': 'so',
+    'darwin': 'dylib',
+}
+library_path = os.path.abspath(os.path.join(os.path.dirname(sys.modules['proofofwork'].__file__), 'libproofofwork.'+soext[sys.platform]))
 library = ctypes.cdll.LoadLibrary(library_path)
 library.pow_md5_mine.restype = ctypes.c_bool
 # library.pow_md5_mine.argtypes = (ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_uint64))

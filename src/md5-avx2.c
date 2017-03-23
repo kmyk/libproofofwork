@@ -4,7 +4,27 @@
 #include <immintrin.h>
 #include <iso646.h>
 #include <stdbool.h>
+
+#if defined(LINUX)
 #include <endian.h>
+#elif defined(__APPLE__) || defined(__DARWIN__)
+#include <libkern/OSByteOrder.h>
+#if defined(__LITTLE_ENDIAN__)
+#define __LITTLE_ENDIAN 1
+#define __BYTE_ORDER __LITTLE_ENDIAN
+#elif defined(__BIG_ENDIAN__)
+#define __BYTE_ORDER __BIG_ENDIAN__
+#else
+#error "unknown byte order."
+#endif
+#define htobe32(x) OSSwapHostToBigInt32(x)
+#define htole32(x) OSSwapHostToLittleInt32(x)
+#define be32toh(x) OSSwapBigToHostInt32(x)
+#define le32toh(x) OSSwapLittleToHostInt32(x)
+#else
+#error "unsupported OS"
+#endif
+
 #ifdef _OPENMP
 #include <omp.h>
 #endif
