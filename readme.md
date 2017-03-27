@@ -27,43 +27,40 @@ $ pip install proofofwork
 >>> import proofofwork
 >>> import hashlib
 
->>> s = proofofwork.md5('00000000', prefix=b'PREFIX_')
+>>> s = proofofwork.md5('00000000')
 >>> s
-b'PREFIX_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA9!!!!!%|crF'
+b'erno8AAA'
 >>> hashlib.md5(s).hexdigest()
-'00000000fda2bbe35f55eca233c66b85'
+'0000000057c4ca67d38e6826053824bd'
 
->>> s = proofofwork.sha1('?????????????????????????0?0?0?0?0?0?0?0')
+>>> s = proofofwork.sha1('000??????????????????????????????????000', text=b'sha1{????????}', alphabet=bytes(range(128, 256)))
 >>> s
-b'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQ!!!O|_U!!/'
+b'sha1{\xcb\xf0\xa4\x80\x80\x80\x80\xe0}'
 >>> hashlib.sha1(s).hexdigest()
-'48a0b84a5e51b5bd1b7e23dc00600040f0f03080'
+'00099d6917591c54f861032fd0d0071fbc647000'
 ```
 
 ## Benchmark
 
 ### MD5
 
-In my environment,
+In my laptop environment (`Intel(R) Core(TM) i5-6200U CPU @ 2.30GHz`),
 
 | Code           | Speed [hashes/sec] |
 | -------------- | ------------------:|
-| libproofofwork |          182000000 |
+| libproofofwork |          158000000 |
 | C openssl      |            5890000 |
 | python hashlib |             794000 |
 
 ### SHA1
 
-In my environment,
+In my laptop environment (`Intel(R) Core(TM) i5-6200U CPU @ 2.30GHz`),
 
 | Code           | Speed [hases/sec] |
 | -------------- | -----------------:|
-| libproofofwork |          85400000 |
+| libproofofwork |          83700000 |
 | C openssl      |           6360000 |
 | python hashlib |            815000 |
-
-They are on CPU.
-If you have GPUs, you may be able to compute hashes faster than above.
 
 ## License
 

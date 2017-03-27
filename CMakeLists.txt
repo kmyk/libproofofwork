@@ -20,7 +20,9 @@ endif ()
 include_directories (include)
 set (sources
     src/md5-avx2.c
-    src/sha1-avx2.c)
+    src/sha1-avx2.c
+    src/common.c
+)
 add_library (proofofwork-shared SHARED ${sources})
 add_library (proofofwork-static STATIC ${sources})
 set_target_properties (proofofwork-shared PROPERTIES OUTPUT_NAME proofofwork)
