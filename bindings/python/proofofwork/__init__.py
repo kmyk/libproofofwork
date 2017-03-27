@@ -9,74 +9,154 @@ soext = {
 }
 library_path = os.path.abspath(os.path.join(os.path.dirname(sys.modules['proofofwork'].__file__), 'libproofofwork.'+soext[sys.platform]))
 library = ctypes.cdll.LoadLibrary(library_path)
+library.pow_set_alphabet.restype = ctypes.c_bool
+library.pow_get_num_threads.restype = ctypes.c_int
+library.pow_get_num_threads.argtypes = ()
+library.pow_set_num_threads.restype = ctypes.c_bool
+library.pow_set_num_threads.argtypes = (ctypes.c_int, )
 library.pow_md5_mine.restype = ctypes.c_bool
-# library.pow_md5_mine.argtypes = (ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_uint64))
 library.pow_sha1_mine.restype = ctypes.c_bool
-# library.pow_sha1_mine.argtypes = (ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_uint64))
 
-def _mine_with_prefix(func, info, s, prefix):
-    if not isinstance(s, str):
+def _call(
+        func, hash, text,
+        num_threads=None, alphabet=None,
+        digest_length=None, text_length_limit=None, block_length=None, indices_length=None):
+
+    # check alphabet
+    if alphabet is not None:
+        if not isinstance(alphabet, bytes):
+            raise TypeError
+        if len(alphabet) == 0:
+            return None
+        alphabet = bytearray(alphabet)
+
+    # check num_threads
+    if num_threads is not None and not isinstance(num_threads, int):
         raise TypeError
-    if len(s) > 2*info['digest_length']:
-        raise ValueError
-    s += '?' * (2*info['digest_length'] - len(s))
-    if not all(c in '0123456789abcdef?' for c in s):
-        raise ValueError
-    if prefix is None:
-        prefix = b''
-    if not isinstance(prefix, bytes):
+
+    # check hash
+    if not isinstance(hash, str):
         raise TypeError
-    if len(prefix) > info['prefix_length_limit']:
+    if len(hash) > 2*digest_length:
         raise ValueError
-    mask   = (ctypes.c_uint8 * info['digest_length'])()
-    target = (ctypes.c_uint8 * info['digest_length'])()
-    for i in range(info['digest_length']):
+    hash += '?' * (2*digest_length - len(hash))
+    if not all(c in '0123456789abcdef?' for c in hash):
+        raise ValueError
+    # prepare hash
+    mask   = (ctypes.c_uint8 * digest_length)()
+    target = (ctypes.c_uint8 * digest_length)()
+    for i in range(digest_length):
         a = 0
         b = 0
-        if s[i*2] != '?':
+        if hash[i*2] != '?':
             a |= 0xf0
-            b += int(s[i*2], 16) * 0x10
-        if s[i*2+1] != '?':
+            b += int(hash[i*2], 16) * 0x10
+        if hash[i*2+1] != '?':
             a |= 0x0f
-            b += int(s[i*2+1], 16)
+            b += int(hash[i*2+1], 16)
         mask[i]   = a
         target[i] = b
-    buf = (ctypes.c_uint8 * info['chunk_length'])()
-    for i, c in enumerate(bytearray(prefix)):
+
+    # check/prepare text
+    if text is None:
+        text = b'????????'
+    if not isinstance(text, bytes):
+        raise TypeError
+    text = bytearray(text)
+    indices = []
+    acc = []
+    i = 0
+    while i < len(text):
+        if text[i] == ord('\\'):
+            if i+1 >= len(text):
+                raise ValueError
+            acc += [ text[i+1] ]
+            i += 2
+        elif text[i] == ord('?'):
+            if len(indices) < indices_length:
+                indices += [ len(acc) ]
+                acc += [ 0 ]
+            else:
+                acc += [ bytearray(alphabet or b'A')[0] ]
+            i += 1
+        else:
+            acc += [ text[i] ]
+            i += 1
+    text = bytes(bytearray(acc))
+    if len(text) > text_length_limit:
+        raise ValueError
+    if len(indices) == 0:
+        return None
+    while len(indices) < indices_length:
+        indices += [ -1 ]
+    buf = (ctypes.c_uint8 * block_length)()
+    for i, c in enumerate(bytearray(text)):
         buf[i] = c
-    size   = ctypes.c_uint64(len(prefix))
-    found = func(ctypes.byref(mask), ctypes.byref(target), ctypes.byref(buf), ctypes.byref(size))
+    ixbuf = (ctypes.c_int32 * indices_length)()
+    for i, x in enumerate(indices):
+        ixbuf[i] = x
+    size = ctypes.c_uint64(len(text))
+
+    # set alphabet
+    if alphabet is not None:
+        albuf = (ctypes.c_uint8 * len(alphabet))()
+        for i, c in enumerate(alphabet):
+            albuf[i] = c
+        library.pow_set_alphabet(ctypes.byref(albuf), ctypes.c_uint64(len(alphabet)))
+
+    # set num_threads
+    saved_num_threads = library.pow_get_num_threads()
+    library.pow_set_num_threads(ctypes.c_int(num_threads or 0))
+
+    # call function
+    found = func(ctypes.byref(mask), ctypes.byref(target), ctypes.byref(buf), size, ctypes.byref(ixbuf))
+
+    # restore num_threads
+    if saved_num_threads:
+        library.pow_set_num_threads(saved_num_threads)
+
+    # result
     if found:
         return bytes(bytearray(buf[:size.value]))
     else:
         return None
 
 MD5_DIGEST_LENGTH = 16
-MD5_CHUNK_LENGTH = 64
-md5_prefix_length_limit = 44
-def md5(s, prefix=None):
+MD5_BLOCK_LENGTH = 64
+md5_text_length_limit = 44
+def md5(hash, text=None, num_threads=None, alphabet=None):
     '''
-    :type s: str or None
-    :type prefix: bytes or None
+    :type hash: str or None
+    :type text: bytes or None
     :rtype: bytes
     '''
-    return _mine_with_prefix(library.pow_md5_mine, {
-            'digest_length': MD5_DIGEST_LENGTH,
-            'chunk_length': MD5_CHUNK_LENGTH,
-            'prefix_length_limit': md5_prefix_length_limit,
-        }, s, prefix)
+    return _call(
+            library.pow_md5_mine,
+            hash, text,
+            num_threads=num_threads,
+            alphabet=alphabet,
+            digest_length=MD5_DIGEST_LENGTH,
+            block_length=MD5_BLOCK_LENGTH,
+            text_length_limit=md5_text_length_limit,
+            indices_length=8,
+            )
 
-SHA_DIGEST_LENGTH = 20
-SHA_CHUNK_LENGTH = 64
-sha1_prefix_length_limit = 44
-def sha1(s, prefix=None):
+SHA1_DIGEST_LENGTH = 20
+SHA1_BLOCK_LENGTH = 64
+sha1_text_length_limit = 44
+def sha1(hash, text=None, num_threads=None, alphabet=None):
     '''
-    :type s: str or None
-    :type prefix: bytes or None
+    :type hash: str or None
+    :type text: bytes or None
     :rtype: bytes
     '''
-    return _mine_with_prefix(library.pow_sha1_mine, {
-            'digest_length': SHA_DIGEST_LENGTH,
-            'chunk_length': SHA_CHUNK_LENGTH,
-            'prefix_length_limit': sha1_prefix_length_limit,
-        }, s, prefix)
+    return _call(
+            library.pow_sha1_mine,
+            hash, text,
+            num_threads=num_threads,
+            alphabet=alphabet,
+            digest_length=SHA1_DIGEST_LENGTH,
+            block_length=SHA1_BLOCK_LENGTH,
+            text_length_limit=sha1_text_length_limit,
+            indices_length=8,
+            )

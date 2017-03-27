@@ -27,7 +27,7 @@ static const uint32_t md5_c0 = 0x98badcfe;
 static const uint32_t md5_d0 = 0x10325476;
 
 uint64_t pow_md5_count = 0; // for benchmark
-bool pow_md5_mine(uint8_t const *mask, uint8_t const *target, int32_t const *indices, uint8_t *buffer, uint64_t size) {
+bool pow_md5_mine(uint8_t const *mask, uint8_t const *target, uint8_t *buffer, uint64_t size, int32_t const *indices) {
     // check arguments
     static_assert (__BYTE_ORDER == __LITTLE_ENDIAN, "");
     if (mask    == NULL) return false;
@@ -37,7 +37,6 @@ bool pow_md5_mine(uint8_t const *mask, uint8_t const *target, int32_t const *ind
     if (buffer  == NULL) return false;
     for (int i = 0; i < pow_indices_length; ++ i) {
         if (indices[i] < -1 or size <= indices[i]) return false;
-        if (i == pow_indices_length - 1 and indices[i] == -1) return false;
     }
     if (size > pow_md5_block_length - 9) return false;
 
@@ -77,21 +76,21 @@ bool pow_md5_mine(uint8_t const *mask, uint8_t const *target, int32_t const *ind
     repeat (i,alphabet_size) {
         uint32_t c = alphabet[i];
         if (i - vector_width >= 0) c ^= alphabet[i - vector_width];
-        padded_alphabet[i] = c << (index7 % 4 * CHAR_BIT);
+        padded_alphabet[i] = c << (index0 % 4 * CHAR_BIT);
     }
 
     // search
     bool found = false;
     uint64_t cnt = 0;
 #pragma omp parallel for shared(found) firstprivate(local) reduction(+:cnt)
-    repeat (i0, alphabet_size) { if (index0 != -1) local[index0] = alphabet[i0]; if (found) continue;
-    repeat (i1, alphabet_size) { if (index1 != -1) local[index1] = alphabet[i1];
-    repeat (i2, alphabet_size) { if (index2 != -1) local[index2] = alphabet[i2];
-    repeat (i3, alphabet_size) { if (index3 != -1) local[index3] = alphabet[i3];
-    repeat (i4, alphabet_size) { if (index4 != -1) local[index4] = alphabet[i4];
-    repeat (i5, alphabet_size) { if (index5 != -1) local[index5] = alphabet[i5];
-        cnt += alphabet_size * alphabet_size;
+    repeat (i7, alphabet_size) { if (index7 != -1) local[index7] = alphabet[i7]; if (found) continue;
     repeat (i6, alphabet_size) { if (index6 != -1) local[index6] = alphabet[i6];
+    repeat (i5, alphabet_size) { if (index5 != -1) local[index5] = alphabet[i5];
+    repeat (i4, alphabet_size) { if (index4 != -1) local[index4] = alphabet[i4];
+    repeat (i3, alphabet_size) { if (index3 != -1) local[index3] = alphabet[i3];
+    repeat (i2, alphabet_size) { if (index2 != -1) local[index2] = alphabet[i2];
+        cnt += alphabet_size * alphabet_size;
+    repeat (i1, alphabet_size) { if (index1 != -1) local[index1] = alphabet[i1];
         __m256i y0  = _mm256_set1_epi32(((uint32_t *)local)[0 ]);
         __m256i y1  = _mm256_set1_epi32(((uint32_t *)local)[1 ]);
         __m256i y2  = _mm256_set1_epi32(((uint32_t *)local)[2 ]);
@@ -106,23 +105,23 @@ bool pow_md5_mine(uint8_t const *mask, uint8_t const *target, int32_t const *ind
         __m256i y11 = _mm256_set1_epi32(((uint32_t *)local)[11]);
         __m256i y12 = _mm256_set1_epi32(((uint32_t *)local)[12]);
         __m256i y13 = _mm256_set1_epi32(((uint32_t *)local)[13]);
-    for (int i7 = 0; i7 + vector_width - 1 < alphabet_size; i7 += vector_width) {
+    for (int i0 = 0; i0 + vector_width - 1 < alphabet_size; i0 += vector_width) {
         // set last byte
-        switch (index7 / 4) {
-            case 0 : y0  ^= _mm256_loadu_si256((__m256i *)(padded_alphabet + i7)); break;
-            case 1 : y1  ^= _mm256_loadu_si256((__m256i *)(padded_alphabet + i7)); break;
-            case 2 : y2  ^= _mm256_loadu_si256((__m256i *)(padded_alphabet + i7)); break;
-            case 3 : y3  ^= _mm256_loadu_si256((__m256i *)(padded_alphabet + i7)); break;
-            case 4 : y4  ^= _mm256_loadu_si256((__m256i *)(padded_alphabet + i7)); break;
-            case 5 : y5  ^= _mm256_loadu_si256((__m256i *)(padded_alphabet + i7)); break;
-            case 6 : y6  ^= _mm256_loadu_si256((__m256i *)(padded_alphabet + i7)); break;
-            case 7 : y7  ^= _mm256_loadu_si256((__m256i *)(padded_alphabet + i7)); break;
-            case 8 : y8  ^= _mm256_loadu_si256((__m256i *)(padded_alphabet + i7)); break;
-            case 9 : y9  ^= _mm256_loadu_si256((__m256i *)(padded_alphabet + i7)); break;
-            case 10: y10 ^= _mm256_loadu_si256((__m256i *)(padded_alphabet + i7)); break;
-            case 11: y11 ^= _mm256_loadu_si256((__m256i *)(padded_alphabet + i7)); break;
-            case 12: y12 ^= _mm256_loadu_si256((__m256i *)(padded_alphabet + i7)); break;
-            case 13: y13 ^= _mm256_loadu_si256((__m256i *)(padded_alphabet + i7)); break;
+        switch (index0 / 4) {
+            case 0 : y0  ^= _mm256_loadu_si256((__m256i *)(padded_alphabet + i0)); break;
+            case 1 : y1  ^= _mm256_loadu_si256((__m256i *)(padded_alphabet + i0)); break;
+            case 2 : y2  ^= _mm256_loadu_si256((__m256i *)(padded_alphabet + i0)); break;
+            case 3 : y3  ^= _mm256_loadu_si256((__m256i *)(padded_alphabet + i0)); break;
+            case 4 : y4  ^= _mm256_loadu_si256((__m256i *)(padded_alphabet + i0)); break;
+            case 5 : y5  ^= _mm256_loadu_si256((__m256i *)(padded_alphabet + i0)); break;
+            case 6 : y6  ^= _mm256_loadu_si256((__m256i *)(padded_alphabet + i0)); break;
+            case 7 : y7  ^= _mm256_loadu_si256((__m256i *)(padded_alphabet + i0)); break;
+            case 8 : y8  ^= _mm256_loadu_si256((__m256i *)(padded_alphabet + i0)); break;
+            case 9 : y9  ^= _mm256_loadu_si256((__m256i *)(padded_alphabet + i0)); break;
+            case 10: y10 ^= _mm256_loadu_si256((__m256i *)(padded_alphabet + i0)); break;
+            case 11: y11 ^= _mm256_loadu_si256((__m256i *)(padded_alphabet + i0)); break;
+            case 12: y12 ^= _mm256_loadu_si256((__m256i *)(padded_alphabet + i0)); break;
+            case 13: y13 ^= _mm256_loadu_si256((__m256i *)(padded_alphabet + i0)); break;
         }
 
         // initialize vector
@@ -219,7 +218,7 @@ bool pow_md5_mine(uint8_t const *mask, uint8_t const *target, int32_t const *ind
                         if (not found) {
                             found = true;
                             memcpy(buffer, local, pow_md5_block_length);
-                            buffer[index7] = alphabet[i7 + i];
+                            buffer[index0] = alphabet[i0 + i];
                             buffer[size] = 0;
                         }
                     }
@@ -228,12 +227,12 @@ bool pow_md5_mine(uint8_t const *mask, uint8_t const *target, int32_t const *ind
         }
 
     // break if unnecessary
-    } if (index6 == -1 or found) break;
-    } if (index5 == -1 or found) break;
-    } if (index4 == -1 or found) break;
-    } if (index3 == -1 or found) break;
-    } if (index2 == -1 or found) break;
     } if (index1 == -1 or found) break;
+    } if (index2 == -1 or found) break;
+    } if (index3 == -1 or found) break;
+    } if (index4 == -1 or found) break;
+    } if (index5 == -1 or found) break;
+    } if (index6 == -1 or found) break;
     }
     }
 

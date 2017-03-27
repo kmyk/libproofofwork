@@ -1,6 +1,7 @@
 #include "proofofwork-private.h"
 #include <string.h>
 #include <stdlib.h>
+#include <iso646.h>
 
 uint8_t alphabet[256] = {
     'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P',
@@ -17,7 +18,7 @@ bool pow_set_alphabet(uint8_t const * s, uint64_t size) {
     qsort(alphabet, size, sizeof(char), &compare_char);
     int j = 0;
     for (int i = 0; i < size; ++ i) { // unique
-        if (alphabet[j] != alphabet[i]) {
+        if (i == 0 or alphabet[i-1] != alphabet[i]) {
             alphabet[j ++] = alphabet[i];
         }
     }

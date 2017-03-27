@@ -10,7 +10,7 @@ int main(int argc, char **argv) {
     int32_t indices[pow_indices_length] = { 5,6,7,8,9,10,11,12 };
     uint64_t size = 14;
     pow_set_num_threads(0);
-    pow_md5_mine(mask, target, indices, buffer, size);
+    pow_md5_mine(mask, target, buffer, size, indices);
     printf("md5\n");
     printf("cafebabe\n");
     printf("%s\n", buffer);
