@@ -19,9 +19,10 @@ class ProofOfWorkTest(unittest.TestCase):
         self.snippet_random_test(proofofwork.sha1, hashlib.sha1)
 
     def snippet_random_test_full(self, mine, answer):
-        for _ in range(3):
+        digest_length = len(answer(b'').hexdigest())
+        for _ in range(10):
             for len_s in range(1, 6):
-                hash = ''.join([ random.choice('0123456789abcdef?') for _ in range(len_s) ])
+                hash = '?' * random.randrange(digest_length - len_s) + ''.join([ random.choice('0123456789abcdef?') for _ in range(len_s) ])
                 text = bytes(bytearray([ random.choice(bytearray(b'0123456789abcdef?')) for _ in range(20) ] + [ ord('?') ] * 4))
                 alphabet = bytes(bytearray([ random.randrange(256) for _ in range(64) ]))
                 result = mine(hash, text=text, alphabet=alphabet)
