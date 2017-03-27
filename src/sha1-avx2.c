@@ -59,7 +59,7 @@ bool pow_sha1_mine(uint8_t const *mask, uint8_t const *target, uint8_t *buffer, 
     const uint32_t target_b = be32toh(((uint32_t *)target)[1]) & mask_b;
     const uint32_t target_c = be32toh(((uint32_t *)target)[2]) & mask_c;
     const uint32_t target_d = be32toh(((uint32_t *)target)[3]) & mask_d;
-    const uint32_t target_e = be32toh(((uint32_t *)target)[4]) & mask_d;
+    const uint32_t target_e = be32toh(((uint32_t *)target)[4]) & mask_e;
 
     // load text
     uint8_t local[pow_sha1_block_length];
