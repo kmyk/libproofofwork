@@ -32,13 +32,13 @@ bool pow_md5_mine(uint8_t const *mask, uint8_t const *target, uint8_t *buffer, u
     static_assert (__BYTE_ORDER == __LITTLE_ENDIAN, "");
     if (mask    == NULL) return false;
     if (target  == NULL) return false;
-    if (target  == NULL) return false;
-    if (indices == NULL) return false;
     if (buffer  == NULL) return false;
+    if (indices == NULL) return false;
     for (int i = 0; i < pow_indices_length; ++ i) {
-        if (indices[i] < -1 or size <= indices[i]) return false;
+        if (indices[i] < -1 or (int64_t)size <= indices[i]) return false;
     }
-    if (size > pow_md5_block_length - 9) return false;
+    if (indices[0] == -1) return false;
+    if (size > pow_sha1_block_length - sizeof(uint64_t) / CHAR_BIT - 1) return false;
 
     // load hash
     const uint32_t mask_a = ((uint32_t *)mask)[0];
@@ -70,7 +70,9 @@ bool pow_md5_mine(uint8_t const *mask, uint8_t const *target, uint8_t *buffer, u
     const int index7 = indices[7];
     static_assert (pow_indices_length == 8, "");
     repeat (i,pow_indices_length) {
-        local[indices[i]] = 0;
+        if (indices[i] != -1) {
+            local[indices[i]] = 0;
+        }
     }
     uint32_t *padded_alphabet = malloc(alphabet_size * sizeof(uint32_t));
     repeat (i,alphabet_size) {
@@ -89,7 +91,7 @@ bool pow_md5_mine(uint8_t const *mask, uint8_t const *target, uint8_t *buffer, u
     repeat (i4, alphabet_size) { if (index4 != -1) local[index4] = alphabet[i4];
     repeat (i3, alphabet_size) { if (index3 != -1) local[index3] = alphabet[i3];
     repeat (i2, alphabet_size) { if (index2 != -1) local[index2] = alphabet[i2];
-        cnt += alphabet_size * alphabet_size;
+        cnt += alphabet_size * (alphabet_size / vector_width * vector_width);
     repeat (i1, alphabet_size) { if (index1 != -1) local[index1] = alphabet[i1];
         __m256i y0  = _mm256_set1_epi32(((uint32_t *)local)[0 ]);
         __m256i y1  = _mm256_set1_epi32(((uint32_t *)local)[1 ]);
@@ -226,7 +228,7 @@ bool pow_md5_mine(uint8_t const *mask, uint8_t const *target, uint8_t *buffer, u
             }
         }
 
-    // break if unnecessary
+    // break
     } if (index1 == -1 or found) break;
     } if (index2 == -1 or found) break;
     } if (index3 == -1 or found) break;

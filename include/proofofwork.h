@@ -37,6 +37,6 @@ bool pow_md5_mine(uint8_t const *mask, uint8_t const *target, uint8_t *buffer, u
 
 enum { pow_sha1_block_length = 64 };
 enum { pow_sha1_digest_length = 20 };
-bool pow_sha1_mine(uint8_t *mask, uint8_t *target, uint8_t *buffer, uint64_t *size);
+bool pow_sha1_mine(uint8_t const *mask, uint8_t const *target, uint8_t *buffer, uint64_t size, int32_t const *indices);
 
 #endif
