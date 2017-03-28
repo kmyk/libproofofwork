@@ -85,14 +85,14 @@ bool pow_md5_mine(uint8_t const *mask, uint8_t const *target, uint8_t *buffer, u
     bool found = false;
     uint64_t cnt = 0;
 #pragma omp parallel for shared(found) firstprivate(local) reduction(+:cnt)
-    repeat (i7, alphabet_size) { if (index7 != -1) local[index7] = alphabet[i7]; if (found) continue;
+    repeat (i1, alphabet_size) { if (index1 != -1) local[index1] = alphabet[i1]; if (found or (index1 == -1 and i1 != 0)) continue;
+    repeat (i7, alphabet_size) { if (index7 != -1) local[index7] = alphabet[i7];
     repeat (i6, alphabet_size) { if (index6 != -1) local[index6] = alphabet[i6];
     repeat (i5, alphabet_size) { if (index5 != -1) local[index5] = alphabet[i5];
     repeat (i4, alphabet_size) { if (index4 != -1) local[index4] = alphabet[i4];
     repeat (i3, alphabet_size) { if (index3 != -1) local[index3] = alphabet[i3];
-    repeat (i2, alphabet_size) { if (index2 != -1) local[index2] = alphabet[i2];
         cnt += alphabet_size * (alphabet_size / vector_width * vector_width);
-    repeat (i1, alphabet_size) { if (index1 != -1) local[index1] = alphabet[i1];
+    repeat (i2, alphabet_size) { if (index2 != -1) local[index2] = alphabet[i2];
         __m256i y0  = _mm256_set1_epi32(((uint32_t *)local)[0 ]);
         __m256i y1  = _mm256_set1_epi32(((uint32_t *)local)[1 ]);
         __m256i y2  = _mm256_set1_epi32(((uint32_t *)local)[2 ]);
@@ -229,12 +229,12 @@ bool pow_md5_mine(uint8_t const *mask, uint8_t const *target, uint8_t *buffer, u
         }
 
     // break
-    } if (index1 == -1 or found) break;
     } if (index2 == -1 or found) break;
     } if (index3 == -1 or found) break;
     } if (index4 == -1 or found) break;
     } if (index5 == -1 or found) break;
     } if (index6 == -1 or found) break;
+    } if (index7 == -1 or found) break;
     }
     }
 
