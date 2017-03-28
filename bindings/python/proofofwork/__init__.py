@@ -10,6 +10,7 @@ soext = {
 library_path = os.path.abspath(os.path.join(os.path.dirname(sys.modules['proofofwork'].__file__), 'libproofofwork.'+soext[sys.platform]))
 library = ctypes.cdll.LoadLibrary(library_path)
 library.pow_set_alphabet.restype = ctypes.c_bool
+library.pow_get_alphabet.restype = ctypes.c_bool
 library.pow_get_num_threads.restype = ctypes.c_int
 library.pow_get_num_threads.argtypes = ()
 library.pow_set_num_threads.restype = ctypes.c_bool
@@ -98,11 +99,19 @@ def _call(
     size = ctypes.c_uint64(len(text))
 
     # set alphabet
+    saved_alphabet = None
     if alphabet is not None:
+        # get
+        salbuf = (ctypes.c_uint8 * 256)()
+        salsize = ctypes.c_uint64(256)
+        library.pow_get_alphabet(ctypes.byref(salbuf), ctypes.byref(salsize))
+        saved_alphabet = (salbuf, salsize)
+        # set
         albuf = (ctypes.c_uint8 * len(alphabet))()
         for i, c in enumerate(alphabet):
             albuf[i] = c
-        library.pow_set_alphabet(ctypes.byref(albuf), ctypes.c_uint64(len(alphabet)))
+        if not library.pow_set_alphabet(ctypes.byref(albuf), ctypes.c_uint64(len(alphabet))):
+            raise ValueError
 
     # set num_threads
     saved_num_threads = library.pow_get_num_threads()
@@ -114,6 +123,11 @@ def _call(
     # restore num_threads
     if saved_num_threads:
         library.pow_set_num_threads(saved_num_threads)
+
+    # restore alphabet
+    if saved_alphabet is not None:
+        salbuf, salsize = saved_alphabet
+        library.pow_set_alphabet(ctypes.byref(salbuf), salsize)
 
     # result
     if found:

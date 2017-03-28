@@ -40,7 +40,7 @@ class custom_build(build):
 
 setup(
     name='proofofwork',
-    version='0.0.8',
+    version='0.0.9',
     description='Simple hash-mining library',
     author='Kimiyuki Onaka',
     author_email='kimiyuki95@gmail.com',

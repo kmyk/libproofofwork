@@ -12,7 +12,7 @@ uint8_t alphabet[256] = {
 size_t alphabet_size = 64;
 
 int compare_char(const void *a, const void *b) { return *(char *)a - *(char *)b; }
-bool pow_set_alphabet(uint8_t const * s, uint64_t size) {
+bool pow_set_alphabet(uint8_t const *s, uint64_t size) {
     if (sizeof(alphabet) <= size) return false;
     memcpy(alphabet, s, size);
     qsort(alphabet, size, sizeof(char), &compare_char);
@@ -23,6 +23,12 @@ bool pow_set_alphabet(uint8_t const * s, uint64_t size) {
         }
     }
     alphabet_size = j;
+    return true;
+}
+bool pow_get_alphabet(uint8_t *s, uint64_t *size) {
+    if (*size < alphabet_size) return false;
+    memcpy(s, alphabet, alphabet_size);
+    *size = alphabet_size;
     return true;
 }
 
