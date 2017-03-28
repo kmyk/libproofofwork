@@ -8,7 +8,8 @@
  * @param [in,out] size       sholud be a multiple of the vector width (8 for AVX2)
  * @return                    true if succeeded
  */
-bool pow_set_alphabet(uint8_t const * alphabet, uint64_t size);
+bool pow_set_alphabet(uint8_t const *alphabet, uint64_t size);
+bool pow_get_alphabet(uint8_t *alphabet, uint64_t *size);
 
 /**
  * Set the number of threads, if possible.
