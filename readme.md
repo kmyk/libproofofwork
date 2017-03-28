@@ -1,10 +1,10 @@
 # libProofOfWork
 
 [![Travis](https://img.shields.io/travis/kmyk/libproofofwork.svg)](https://travis-ci.org/kmyk/libproofofwork)
-[![PyPI](https://img.shields.io/pypi/l/proofofwork.svg)]()
-[![PyPI](https://img.shields.io/pypi/pyversions/proofofwork.svg)]()
-[![PyPI](https://img.shields.io/pypi/status/proofofwork.svg)]()
-[![PyPI](https://img.shields.io/pypi/v/proofofwork.svg)]()
+![PyPI](https://img.shields.io/pypi/l/proofofwork.svg)
+![PyPI](https://img.shields.io/pypi/pyversions/proofofwork.svg)
+![PyPI](https://img.shields.io/pypi/status/proofofwork.svg)
+[![PyPI](https://img.shields.io/pypi/v/proofofwork.svg)](https://pypi.python.org/pypi/proofofwork)
 
 Simple hash-mining c library and its python binding.
 
