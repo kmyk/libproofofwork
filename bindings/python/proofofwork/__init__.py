@@ -17,6 +17,7 @@ library.pow_set_num_threads.restype = ctypes.c_bool
 library.pow_set_num_threads.argtypes = (ctypes.c_int, )
 library.pow_md5_mine.restype = ctypes.c_bool
 library.pow_sha1_mine.restype = ctypes.c_bool
+library.pow_sha256_mine.restype = ctypes.c_bool
 
 def _call(
         func, hash, text,
@@ -172,5 +173,25 @@ def sha1(hash, text=None, num_threads=None, alphabet=None):
             digest_length=SHA1_DIGEST_LENGTH,
             block_length=SHA1_BLOCK_LENGTH,
             text_length_limit=sha1_text_length_limit,
+            indices_length=8,
+            )
+
+SHA256_DIGEST_LENGTH = 32
+SHA256_BLOCK_LENGTH = 64
+sha256_text_length_limit = 44
+def sha256(hash, text=None, num_threads=None, alphabet=None):
+    '''
+    :type hash: str or None
+    :type text: bytes or None
+    :rtype: bytes
+    '''
+    return _call(
+            library.pow_sha256_mine,
+            hash, text,
+            num_threads=num_threads,
+            alphabet=alphabet,
+            digest_length=SHA256_DIGEST_LENGTH,
+            block_length=SHA256_BLOCK_LENGTH,
+            text_length_limit=sha256_text_length_limit,
             indices_length=8,
             )

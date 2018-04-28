@@ -45,5 +45,6 @@ extern size_t alphabet_size;
 // for benchmark
 extern uint64_t pow_md5_count;
 extern uint64_t pow_sha1_count;
+extern uint64_t pow_sha256_count;
 
 #endif
