@@ -18,6 +18,9 @@ class ProofOfWorkTest(unittest.TestCase):
     def test_sha1(self):
         self.snippet_random_test(proofofwork.sha1, hashlib.sha1)
 
+    def test_sha256(self):
+        self.snippet_random_test(proofofwork.sha256, hashlib.sha256)
+
     def snippet_random_test_full(self, mine, answer):
         digest_length = len(answer(b'').hexdigest())
         for _ in range(10):
@@ -48,6 +51,9 @@ class ProofOfWorkTest(unittest.TestCase):
     def test_sha1_full(self):
         self.snippet_random_test_full(proofofwork.sha1, hashlib.sha1)
 
+    def test_sha256_full(self):
+        self.snippet_random_test_full(proofofwork.sha256, hashlib.sha256)
+
     def snippet_hand_test(self, mine, answer):
         s = '012'
         result = mine(s, text=br'\\\?????')
@@ -61,6 +67,9 @@ class ProofOfWorkTest(unittest.TestCase):
 
     def test_sha1_hand(self):
         self.snippet_hand_test(proofofwork.sha1, hashlib.sha1)
+
+    def test_sha256_hand(self):
+        self.snippet_hand_test(proofofwork.sha256, hashlib.sha256)
 
 
 

@@ -17,13 +17,19 @@ if (OPENMP_FOUND)
     set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
 endif ()
 
+# check OpenSSL
+find_package(OpenSSL REQUIRED)
+
 include_directories (include)
 set (sources
     src/md5-avx2.c
     src/sha1-avx2.c
+    src/sha256-openssl.c
     src/common.c
 )
 add_library (proofofwork-shared SHARED ${sources})
 add_library (proofofwork-static STATIC ${sources})
 set_target_properties (proofofwork-shared PROPERTIES OUTPUT_NAME proofofwork)
 set_target_properties (proofofwork-static PROPERTIES OUTPUT_NAME proofofwork)
+target_link_libraries(proofofwork-shared ${OPENSSL_LIBRARIES})
+target_link_libraries(proofofwork-static ${OPENSSL_LIBRARIES})

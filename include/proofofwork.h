@@ -29,7 +29,7 @@ enum { pow_md5_digest_length = 16 };
 /**
  * @param [in]     mask       the length must be pow_md5_digest_length.
  * @param [in]     target     the length must be pow_md5_digest_length.
- * @param [in,out] buffer     the length must be pow_md5_digest_length.
+ * @param [in,out] buffer     the length must be at most pow_md5_block_length.
  * @param [in]     size
  * @param [in]     indices    indices of buffer to modify. the length must be pow_indices.
  * @return                    whether a text is found or not.
@@ -39,5 +39,9 @@ bool pow_md5_mine(uint8_t const *mask, uint8_t const *target, uint8_t *buffer, u
 enum { pow_sha1_block_length = 64 };
 enum { pow_sha1_digest_length = 20 };
 bool pow_sha1_mine(uint8_t const *mask, uint8_t const *target, uint8_t *buffer, uint64_t size, int32_t const *indices);
+
+enum { pow_sha256_block_length = 64 };
+enum { pow_sha256_digest_length = 32 };
+bool pow_sha256_mine(uint8_t const *mask, uint8_t const *target, uint8_t *buffer, uint64_t size, int32_t const *indices);
 
 #endif
