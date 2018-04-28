@@ -38,7 +38,7 @@ bool pow_md5_mine(uint8_t const *mask, uint8_t const *target, uint8_t *buffer, u
         if (indices[i] < -1 or (int64_t)size <= indices[i]) return false;
     }
     if (indices[0] == -1) return false;
-    if (size > pow_sha1_block_length - sizeof(uint64_t) / CHAR_BIT - 1) return false;
+    if (size > pow_md5_block_length - sizeof(uint64_t) / CHAR_BIT - 1) return false;
 
     // load hash
     const uint32_t mask_a = ((uint32_t *)mask)[0];

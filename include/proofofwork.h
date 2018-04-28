@@ -29,7 +29,7 @@ enum { pow_md5_digest_length = 16 };
 /**
  * @param [in]     mask       the length must be pow_md5_digest_length.
  * @param [in]     target     the length must be pow_md5_digest_length.
- * @param [in,out] buffer     the length must be pow_md5_digest_length.
+ * @param [in,out] buffer     the length must be at most pow_md5_block_length.
  * @param [in]     size
  * @param [in]     indices    indices of buffer to modify. the length must be pow_indices.
  * @return                    whether a text is found or not.
